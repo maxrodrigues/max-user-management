@@ -3,6 +3,7 @@
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Middleware\ApiTokenMiddleware;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -14,7 +15,7 @@ Route::get('/', function () {
 Route::post('/register', RegisterController::class)->name('register');
 Route::post('/login', LoginController::class)->name('login');
 
-Route::middleware([\App\Http\Middleware\ApiTokenMiddleware::class])->group(function () {
+Route::middleware([ApiTokenMiddleware::class])->group(function () {
     Route::get('/profile', ProfileController::class)->name('profile');
 });
 
