@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,3 +13,8 @@ Route::get('/', function () {
 
 Route::post('/register', RegisterController::class)->name('register');
 Route::post('/login', LoginController::class)->name('login');
+
+Route::middleware([\App\Http\Middleware\ApiTokenMiddleware::class])->group(function () {
+    Route::get('/profile', ProfileController::class)->name('profile');
+});
+
