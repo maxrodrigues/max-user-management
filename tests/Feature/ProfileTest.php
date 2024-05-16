@@ -21,7 +21,7 @@ class ProfileTest extends TestCase
     public function test_only_registered_users_can_view_their_profile(): void
     {
         $response = $this->get(route('profile.show'));
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
+        $response->assertStatus(Response::HTTP_FOUND);
 
         $user = $this->createUser();
         $this->actingAs($user);
