@@ -47,6 +47,53 @@ class PasswordRecoverTest extends TestCase
         $this->assertTrue(Hash::check(Carbon::now() . $userAndToken['user'], $content['reset_token']));
     }
 
+    public function test_send_token_and_change_password(): void
+    {
+        $userAndToken = $this->userAndToken();
+        $response = $this->jsonRequest(
+            method: 'POST',
+            uri: route('recover'),
+            headers: ['Authorization' => 'Bearer ' . $userAndToken['token']],
+        );
+
+        $token = json_decode($response->getContent(), true)['reset_token'];
+
+        $changePasswordResponse = $this->jsonRequest(
+            method: 'POST',
+            uri: route('change-password'),
+            data: ['token' => $token, 'password' => 'newPassword', 'password_confirmation' => 'newPassword'],
+            headers: ['Authorization' => 'Bearer ' . $userAndToken['token']],
+        );
+
+        $changePasswordResponse->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'message' => 'Password changed'
+            ]);
+
+        $this->assertTrue(Hash::check('newPassword', User::find(1)->password));
+    }
+
+    public function test_return_error_when_attr_required_is_incomplete(): void
+    {
+        $userAndToken = $this->userAndToken();
+        $response = $this->jsonRequest(
+            method: 'POST',
+            uri: route('recover'),
+            headers: ['Authorization' => 'Bearer ' . $userAndToken['token']],
+        );
+
+        $token = json_decode($response->getContent(), true)['reset_token'];
+
+        $changePasswordResponse = $this->jsonRequest(
+            method: 'POST',
+            uri: route('change-password'),
+            data: ['token' => $token, 'password' => 'newPassword'],
+            headers: ['Authorization' => 'Bearer ' . $userAndToken['token']],
+        );
+
+        $changePasswordResponse->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
     private function userAndToken(): array
     {
         $user = User::factory()->create();;

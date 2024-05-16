@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Http\Requests\ChangePasswordRequest;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\JWT;
 
 class RecoverController extends Controller
 {
@@ -33,9 +30,23 @@ class RecoverController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function changePassword(Request $request): JsonResponse
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
-        
-        return new JsonResponse([], Response::HTTP_OK);
+        $data = $request->validated();
+        $token = DB::table('password_reset_tokens')
+            ->where('token', $request->token)
+            ->first();
+
+        if (! $token) {
+            return new JsonResponse(['message' => 'Error when change password'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = auth()->user();
+        $user->password = $data['password'];
+        $user->save();
+
+        return new JsonResponse([
+            'message' => 'Password changed'
+        ], Response::HTTP_OK);
     }
 }
